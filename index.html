@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Long-Term Trade Strategy | Portfolio Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #1a1d27; }
+    ::-webkit-scrollbar-thumb { background: #2e3650; border-radius: 3px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .badge-red    { background: #3d1515; color: #f87171; border: 1px solid #7f1d1d; }
+    .badge-amber  { background: #3d2e00; color: #fbbf24; border: 1px solid #78350f; }
+    .badge-green  { background: #0f2e1a; color: #4ade80; border: 1px solid #14532d; }
+    .badge-blue   { background: #0d1f3c; color: #60a5fa; border: 1px solid #1e3a5f; }
+    .badge-grey   { background: #1e2130; color: #94a3b8; border: 1px solid #334155; }
+    .tag-high     { background: #3d1515; color: #f87171; }
+    .tag-vhigh    { background: #500; color: #fca5a5; }
+    .tag-medium   { background: #3d2e00; color: #fbbf24; }
+    .tag-low      { background: #0f2e1a; color: #4ade80; }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const { useState, useMemo } = React;
+
+// ── DATA ────────────────────────────────────────────────────────────────────
+
+const PORTFOLIO_SIZE = 22073.71;
+const AS_OF = "June 11, 2026";
+
+const HOLDINGS = [
+  { ticker:"PLTR", company:"Palantir Technologies",       shares:66.79,      price:128.32, targetPct:20,  stop:"$107",  so1:"$160",  so2:"$195",  action:"TRIM",  risk:"HIGH",     nextCatalyst:"Earnings ~Aug 2026", thesisStatus:"intact",   notes:"39.3% weight — 2× the 20% rule. Trim ~32 shares. P/E 154×." },
+  { ticker:"HIMS", company:"Hims & Hers Health",          shares:156.07,     price:28.98,  targetPct:13,  stop:"$22.50",so1:"$38",   so2:"$50",   action:"TRIM",  risk:"VERY HIGH",nextCatalyst:"Earnings ~Aug 2026", thesisStatus:"shifting", notes:"DOJ referral active. GLP-1 franchise contracting ~31%. Margin compression." },
+  { ticker:"VTI",  company:"Vanguard Total Market ETF",   shares:10.61,      price:364.30, targetPct:18,  stop:"$310",  so1:"N/A",   so2:"N/A",   action:"HOLD",  risk:"LOW",      nextCatalyst:"Continuous",         thesisStatus:"intact",   notes:"Sole true diversifier. Only non-correlated holding." },
+  { ticker:"SMH",  company:"VanEck Semiconductor ETF",    shares:6.32,       price:588.07, targetPct:17,  stop:"$490",  so1:"$700",  so2:"$850",  action:"HOLD",  risk:"MEDIUM",   nextCatalyst:"Sector earnings",    thesisStatus:"intact",   notes:"Contains ~2-3% MU exposure. Adding direct MU increases semi concentration." },
+  { ticker:"MSFT", company:"Microsoft Corporation",       shares:2.71,       price:398.47, targetPct:7,   stop:"$340",  so1:"$450",  so2:"$520",  action:"HOLD",  risk:"LOW",      nextCatalyst:"Earnings ~Jul 2026", thesisStatus:"intact",   notes:"Underweight given quality. Consider adding post-PLTR trim." },
+  { ticker:"SNDK", company:"SanDisk Corporation",         shares:0.020030,   price:1744.32,targetPct:0,   stop:"N/A",   so1:"N/A",   so2:"N/A",   action:"CLOSE", risk:"N/A",      nextCatalyst:"N/A",                thesisStatus:"none",     notes:"$34.94 position — rounding error. Close or build a real thesis." },
+  { ticker:"BODI", company:"Beachbody Company",           shares:0.323347,   price:10.23,  targetPct:0,   stop:"N/A",   so1:"N/A",   so2:"N/A",   action:"CLOSE", risk:"N/A",      nextCatalyst:"N/A",                thesisStatus:"none",     notes:"$3.31 position. Close and redeploy." },
+];
+
+const RESEARCH = [
+  { ticker:"MU",   company:"Micron Technology",       date:"Jun 11, 2026", price:"$926",  macroBias:"Bullish",  techBias:"Bullish above $900",     fundRating:"Strong",  thesis:"AI memory supercycle: HBM TAM $35B→$100B by 2028. Micron #2 HBM supplier at 21% share.",    topRisk:"Demand pull-forward: hyperscaler capex pause unwinds entire thesis",             entry:"T1 entered ~$926; T2 pending Jun 24 earnings confirm", stop:"$820",  t1:"$1,150", t2:"$1,300", status:"active"   },
+  { ticker:"PLTR", company:"Palantir Technologies",   date:"Jun 11, 2026", price:"$128",  macroBias:"Bullish",  techBias:"Deteriorating — below $130", fundRating:"Strong / Extreme Val.", thesis:"AIP platform with high switching costs across gov + commercial AI. Rule of 40: 145%.", topRisk:"Multiple compression: P/E 154×→80× = 48% price decline, zero biz deterioration", entry:"Held — TRIM to 20% ($4,414) before adding new positions",  stop:"$107", t1:"$160",   t2:"$195",   status:"overweight"},
+  { ticker:"HIMS", company:"Hims & Hers Health",      date:"Jun 11, 2026", price:"$29",   macroBias:"Cautious", techBias:"Volatile/binary",           fundRating:"Thesis shifting",  thesis:"Pivoting from cheap compounded GLP-1 disruptor to Novo Nordisk branded distributor.",   topRisk:"DOJ investigation materializes → existential legal overhang",                   entry:"Held — TRIM to 12-15% ($2,648–$3,311)",                   stop:"$22.50",t1:"$38",   t2:"$50",    status:"overweight"},
+];
+
+const WATCHLIST = [
+  { ticker:"NVDA", company:"Nvidia",               reason:"Core HBM customer — validates/invalidates MU thesis directly",  priority:"HIGH",   added:"Jun 11, 2026", notes:"Supplier mix disclosures are the #1 forward indicator for MU and PLTR." },
+  { ticker:"AMD",  company:"Advanced Micro Devices",reason:"Alt AI chip exposure; potential MU HBM4 customer if Nvidia allocation shifts", priority:"MEDIUM", added:"Jun 11, 2026", notes:"If Nvidia reduces MU allocation, AMD relationship becomes critical." },
+  { ticker:"AMAT", company:"Applied Materials",     reason:"Semi equipment; less Taiwan concentration than MU",             priority:"MEDIUM", added:"Jun 11, 2026", notes:"Geopolitical hedge — benefits from onshoring regardless of HBM race winner." },
+  { ticker:"HXSCL",company:"SK Hynix (ADR)",        reason:"HBM market leader at 62% share; rotation hedge vs MU",         priority:"MEDIUM", added:"Jun 11, 2026", notes:"Red team hedge if Samsung recovers — rotate here before reducing MU." },
+];
+
+const MU_CHECKS = [
+  { metric:"MU Price vs $900 Support",            freq:"Weekly",           current:"~$926",           trigger:"Close below $820 on volume",                                action:"EXIT Tranche 1 — structural stop breached",                      status:"ok" },
+  { metric:"Jun 24 Q3 FY2026 Earnings",           freq:"One-time event",   current:"PENDING",         trigger:"Rev <$33.5B OR HBM4 qual language hedged",                  action:"Cancel Tranche 2; full thesis reassessment",                     status:"alert" },
+  { metric:"Nvidia Data Center Revenue (QoQ)",    freq:"Quarterly",        current:"Monitor",         trigger:"2 consecutive quarters of sequential deceleration",          action:"Scale out 20-25%; buy MU put spreads ($800/$600)",               status:"ok" },
+  { metric:"HBM Market Share: Samsung vs Micron", freq:"Quarterly (TrendForce)", current:"MU 21%, Samsung 17%", trigger:"Samsung >25% in single quarter",             action:"Reduce 25%; monitor for ASP pricing aggression",                 status:"ok" },
+  { metric:"HBM4 Vera Rubin Qualification",       freq:"Quarterly call",   current:"In progress",     trigger:"Any delay language or Nvidia allocation loss",               action:"Reduce 30-40% immediately",                                      status:"ok" },
+  { metric:"DRAM Contract Price Index (TrendForce)",freq:"Monthly",        current:"Monitor",         trigger:"2 consecutive months of MoM DDR5 price declines",           action:"Inventory cycle turning — tighten trailing stop",                status:"ok" },
+  { metric:"Server OEM Days Inventory (DIO)",     freq:"Quarterly",        current:"Monitor",         trigger:"DIO above 90 days (Dell, HPE, Supermicro)",                 action:"Inventory overhang building — reduce to T1 only",                status:"ok" },
+  { metric:"Geopolitical: US-China / Taiwan",     freq:"Weekly (news)",    current:"Elevated baseline",trigger:"PLA exercises within 50nm of Taiwan OR China names Micron",action:"Activate SMH put hedge; consider 50% position reduction",        status:"ok" },
+  { metric:"Scale-Out 1 Trigger",                 freq:"Price alert",      current:"Not triggered",   trigger:"MU closes above $1,150",                                    action:"Sell 25% of position",                                           status:"ok" },
+  { metric:"Scale-Out 2 Trigger",                 freq:"Price alert",      current:"Not triggered",   trigger:"MU closes above $1,300",                                    action:"Sell 25% of position; trail 15% stop on remainder",              status:"ok" },
+];
+
+const PLTR_CHECKS = [
+  { metric:"PLTR Weight vs 20% Max",              freq:"Weekly",           current:"39.3% — OVER LIMIT", trigger:"Above 20% ($4,414)",                                  action:"TRIM — sell ~32 shares immediately",                             status:"alert" },
+  { metric:"PLTR Price vs $130 Support",          freq:"Weekly",           current:"~$128 — BELOW SUPPORT",trigger:"Close below $107 (stop)",                           action:"EXIT remaining position — mechanical",                           status:"warn" },
+  { metric:"P/E vs AI Software Peer Group",       freq:"Quarterly",        current:"~154×",           trigger:"Peer group contracts 20%+ without earnings miss",           action:"Reduce PLTR 25% — multiple compression contagion",               status:"ok" },
+  { metric:"US Government Revenue Growth",        freq:"Quarterly",        current:"+84% YoY Q1 2026",trigger:"Deceleration below 40% YoY",                              action:"Reduce 30-40% — 50%+ of revenue exposed",                        status:"ok" },
+  { metric:"US Commercial Revenue Growth",        freq:"Quarterly",        current:"+133% YoY Q1 2026",trigger:"Two consecutive quarters of 20pt+ deceleration",         action:"Apply 15% trailing stop from quarter-end close",                 status:"ok" },
+  { metric:"Hyperscaler AIP Competition",         freq:"Ongoing (news)",   current:"Monitor (Anthropic flag Apr 2026)", trigger:"Hyperscaler launches on-prem AI orch with clearance-compatible arch", action:"Reduce 30%; rotate partial to MSFT",          status:"ok" },
+];
+
+const HIMS_CHECKS = [
+  { metric:"HIMS Weight vs 15% Target",           freq:"Weekly",           current:"20.8% — OVER LIMIT", trigger:"Above 15% ($3,311)",                                  action:"TRIM — sell ~40 shares to reach 15%",                            status:"alert" },
+  { metric:"DOJ Investigation Status",            freq:"Monthly (SEC filings)",current:"Referred — no charges", trigger:"Any formal DOJ charging document",             action:"EXIT ENTIRE POSITION — thesis-ending event",                     status:"warn" },
+  { metric:"GLP-1 Subscriber Count (QoQ)",        freq:"Quarterly",        current:"Monitor",         trigger:"Decline >15% QoQ for two consecutive quarters",           action:"Reduce to 10% weight; accelerate exit",                          status:"ok" },
+  { metric:"Gross Margin Trend",                  freq:"Quarterly",        current:"Compressing",     trigger:"Gross margin below 65% for two consecutive quarters",      action:"Trim to 10-12% weight — structural thesis broken",               status:"warn" },
+  { metric:"Novo Nordisk Partnership",            freq:"Quarterly",        current:"Deal signed Mar 2026", trigger:"Partnership terms change or Novo Nordisk terminates",action:"Reduce 30% immediately",                                         status:"ok" },
+  { metric:"HIMS Price vs $22.50 Stop",           freq:"Weekly",           current:"~$28.98",         trigger:"Close below $22.50",                                      action:"EXIT remaining position — mechanical",                           status:"ok" },
+];
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+
+const fmt$ = v => v >= 1000 ? `$${v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}` : `$${v.toFixed(2)}`;
+const fmtPct = v => `${(v*100).toFixed(1)}%`;
+
+const totalValue = HOLDINGS.reduce((s,h) => s + h.shares * h.price, 0);
+
+const actionBadge = a => {
+  if (a === "TRIM")  return <span className="badge badge-amber">TRIM</span>;
+  if (a === "CLOSE") return <span className="badge badge-red">CLOSE</span>;
+  if (a === "HOLD")  return <span className="badge badge-green">HOLD</span>;
+  return <span className="badge badge-grey">{a}</span>;
+};
+
+const riskBadge = r => {
+  const map = {"HIGH":"badge-red","VERY HIGH":"badge-red","MEDIUM":"badge-amber","LOW":"badge-green","N/A":"badge-grey"};
+  return <span className={`badge ${map[r]||"badge-grey"}`}>{r}</span>;
+};
+
+const statusDot = s => {
+  if (s==="alert") return <span style={{color:"#f87171"}} className="pulse">● ALERT</span>;
+  if (s==="warn")  return <span style={{color:"#fbbf24"}}>● WATCH</span>;
+  return <span style={{color:"#4ade80"}}>● OK</span>;
+};
+
+const thesisBadge = s => {
+  if (s==="intact")    return <span className="badge badge-green">✅ Intact</span>;
+  if (s==="shifting")  return <span className="badge badge-amber">⚠️ Shifting</span>;
+  if (s==="none")      return <span className="badge badge-grey">❓ No Thesis</span>;
+  return <span className="badge badge-grey">{s}</span>;
+};
+
+// ── COMPONENTS ───────────────────────────────────────────────────────────────
+
+const Card = ({label, value, sub, accent}) => (
+  <div style={{background:"#1a1d27",border:`1px solid ${accent||"#2e3650"}`,borderRadius:8,padding:"14px 18px",minWidth:160}}>
+    <div style={{fontSize:11,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:4}}>{label}</div>
+    <div style={{fontSize:22,fontWeight:700,color:accent||"#e2e8f0"}}>{value}</div>
+    {sub && <div style={{fontSize:11,color:"#64748b",marginTop:3}}>{sub}</div>}
+  </div>
+);
+
+const SectionTitle = ({children, color="#2e75b6"}) => (
+  <div style={{background:color,color:"#fff",fontWeight:700,fontSize:12,padding:"6px 14px",borderRadius:4,marginBottom:8,letterSpacing:"0.05em"}}>
+    {children}
+  </div>
+);
+
+const Table = ({headers, children, style}) => (
+  <div style={{overflowX:"auto",...style}}>
+    <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+      <thead>
+        <tr>{headers.map((h,i) => (
+          <th key={i} style={{background:"#1e2235",color:"#94a3b8",padding:"8px 10px",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap",borderBottom:"1px solid #2e3650"}}>{h}</th>
+        ))}</tr>
+      </thead>
+      <tbody>{children}</tbody>
+    </table>
+  </div>
+);
+
+const TR = ({children, even}) => (
+  <tr style={{background: even ? "#161925" : "#1a1d27", borderBottom:"1px solid #242840"}}>
+    {children}
+  </tr>
+);
+
+const TD = ({children, style, align}) => (
+  <td style={{padding:"9px 10px",verticalAlign:"top",textAlign:align||"left",...style}}>{children}</td>
+);
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+
+function PortfolioTab() {
+  const [sortCol, setSortCol] = useState("value");
+  const sorted = useMemo(() => {
+    return [...HOLDINGS].sort((a,b) => (b.shares*b.price) - (a.shares*a.price));
+  }, []);
+
+  const ai_tech = HOLDINGS.filter(h=>["PLTR","MSFT","SMH"].includes(h.ticker))
+                           .reduce((s,h)=>s+h.shares*h.price,0);
+
+  return (
+    <div>
+      {/* Summary Cards */}
+      <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:20}}>
+        <Card label="Total Portfolio" value={fmt$(totalValue)} sub={`As of ${AS_OF}`} accent="#60a5fa"/>
+        <Card label="Positions" value={HOLDINGS.length} sub="7 holdings" />
+        <Card label="Largest Position" value="PLTR" sub={`${fmtPct((HOLDINGS[0].shares*HOLDINGS[0].price)/totalValue)} of portfolio`} accent="#f87171"/>
+        <Card label="AI / Tech Exposure" value={fmtPct(ai_tech/totalValue)} sub="PLTR + MSFT + SMH" accent="#fbbf24"/>
+        <Card label="Positions Needing Action" value={HOLDINGS.filter(h=>h.action!=="HOLD").length} sub="Trim or Close" accent="#f87171"/>
+        <Card label="Max Single Position" value="20%" sub={fmt$(PORTFOLIO_SIZE*0.20)+" limit"} accent="#4ade80"/>
+      </div>
+
+      {/* Holdings Table */}
+      <SectionTitle>CURRENT HOLDINGS</SectionTitle>
+      <Table headers={["Ticker","Company","Shares","Price","Value","% Portfolio","Target","Action","Stop","Scale-Out 1","Scale-Out 2","Risk","Thesis","Next Catalyst"]}>
+        {sorted.map((h,i) => {
+          const val = h.shares * h.price;
+          const pct = val / totalValue;
+          const over = pct > (h.targetPct/100) * 1.05;
+          return (
+            <TR key={h.ticker} even={i%2===0}>
+              <TD><strong style={{color:"#60a5fa"}}>{h.ticker}</strong></TD>
+              <TD style={{color:"#94a3b8",fontSize:11}}>{h.company}</TD>
+              <TD align="right" style={{fontFamily:"monospace"}}>{h.shares.toFixed(4)}</TD>
+              <TD align="right" style={{color:"#60a5fa",fontFamily:"monospace"}}>{fmt$(h.price)}</TD>
+              <TD align="right" style={{fontWeight:600,fontFamily:"monospace"}}>{fmt$(val)}</TD>
+              <TD align="right">
+                <span style={{color: over?"#f87171":"#4ade80", fontWeight:600}}>
+                  {fmtPct(pct)}
+                </span>
+              </TD>
+              <TD align="center" style={{color:"#94a3b8"}}>{h.targetPct}%</TD>
+              <TD>{actionBadge(h.action)}</TD>
+              <TD style={{color:"#f87171",fontFamily:"monospace",fontSize:11}}>{h.stop}</TD>
+              <TD style={{color:"#4ade80",fontFamily:"monospace",fontSize:11}}>{h.so1}</TD>
+              <TD style={{color:"#4ade80",fontFamily:"monospace",fontSize:11}}>{h.so2}</TD>
+              <TD>{riskBadge(h.risk)}</TD>
+              <TD>{thesisBadge(h.thesisStatus)}</TD>
+              <TD style={{color:"#94a3b8",fontSize:11}}>{h.nextCatalyst}</TD>
+            </TR>
+          );
+        })}
+        <TR>
+          <TD colSpan={4}><strong>TOTAL</strong></TD>
+          <TD align="right"><strong style={{color:"#60a5fa"}}>{fmt$(totalValue)}</strong></TD>
+          <TD align="right"><strong>100.0%</strong></TD>
+          <TD colSpan={8}/>
+        </TR>
+      </Table>
+
+      {/* Notes */}
+      <div style={{marginTop:16,display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        {sorted.filter(h=>h.action!=="HOLD").map(h=>(
+          <div key={h.ticker} style={{background:"#1a1d27",border:"1px solid #3d1515",borderRadius:6,padding:12}}>
+            <div style={{fontWeight:700,color:"#f87171",marginBottom:4}}>{h.ticker} — {h.action}</div>
+            <div style={{fontSize:12,color:"#94a3b8"}}>{h.notes}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Allocation Rules */}
+      <div style={{marginTop:20}}>
+        <SectionTitle>ALLOCATION RULES  (Portfolio: {fmt$(PORTFOLIO_SIZE)})</SectionTitle>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+          {[
+            {label:"Max Single Position (20%)", val:fmt$(PORTFOLIO_SIZE*0.20), color:"#3d1515"},
+            {label:"Comfortable Core (15%)",    val:fmt$(PORTFOLIO_SIZE*0.15), color:"#3d2e00"},
+            {label:"Starter Tranche (7.5%)",    val:fmt$(PORTFOLIO_SIZE*0.075),color:"#0d1f3c"},
+            {label:"Tail Hedge Budget (3%)",     val:fmt$(PORTFOLIO_SIZE*0.03), color:"#0d1f3c"},
+            {label:"Max Risk Per Trade (1.5%)",  val:fmt$(PORTFOLIO_SIZE*0.015),color:"#0f2e1a"},
+            {label:"Max Total Open Risk (6%)",   val:fmt$(PORTFOLIO_SIZE*0.06), color:"#0f2e1a"},
+          ].map(r=>(
+            <div key={r.label} style={{background:r.color,borderRadius:6,padding:"10px 14px",border:"1px solid #2e3650"}}>
+              <div style={{fontSize:11,color:"#94a3b8",marginBottom:2}}>{r.label}</div>
+              <div style={{fontSize:16,fontWeight:700,color:"#e2e8f0",fontFamily:"monospace"}}>{r.val}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ResearchTab() {
+  const statusBadge = s => {
+    if (s==="active")     return <span className="badge badge-green">🟢 Active</span>;
+    if (s==="overweight") return <span className="badge badge-red">🔴 Overweight</span>;
+    return <span className="badge badge-grey">{s}</span>;
+  };
+
+  const macroBadge = m => {
+    if (m.includes("Bullish")) return <span style={{color:"#4ade80",fontSize:11}}>↑ {m}</span>;
+    if (m.includes("Cautious")) return <span style={{color:"#fbbf24",fontSize:11}}>→ {m}</span>;
+    return <span style={{color:"#94a3b8",fontSize:11}}>{m}</span>;
+  };
+
+  return (
+    <div>
+      <SectionTitle>COMPLETED RESEARCH  |  Four-Pillar + Red Team Analysis</SectionTitle>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
+        {RESEARCH.map((r,i) => (
+          <div key={r.ticker} style={{background:"#1a1d27",border:"1px solid #2e3650",borderRadius:8,padding:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:10,flexWrap:"wrap"}}>
+              <span style={{fontSize:20,fontWeight:800,color:"#60a5fa"}}>{r.ticker}</span>
+              <span style={{color:"#64748b",fontSize:13}}>{r.company}</span>
+              <span style={{color:"#64748b",fontSize:11}}>Analyzed {r.date} @ {r.price}</span>
+              <div style={{marginLeft:"auto"}}>{statusBadge(r.status)}</div>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:10,marginBottom:12}}>
+              {[
+                {label:"Macro Bias",          val:macroBadge(r.macroBias)},
+                {label:"Technical Bias",       val:<span style={{fontSize:11,color:"#e2e8f0"}}>{r.techBias}</span>},
+                {label:"Fundamental Rating",   val:<span style={{fontSize:11,color:"#e2e8f0"}}>{r.fundRating}</span>},
+              ].map(f=>(
+                <div key={f.label} style={{background:"#161925",borderRadius:4,padding:"8px 10px"}}>
+                  <div style={{fontSize:10,color:"#64748b",marginBottom:3}}>{f.label}</div>
+                  <div>{f.val}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{background:"#161925",borderRadius:4,padding:"10px 12px",marginBottom:8}}>
+              <div style={{fontSize:10,color:"#64748b",marginBottom:3}}>CORE THESIS</div>
+              <div style={{fontSize:12,color:"#e2e8f0"}}>{r.thesis}</div>
+            </div>
+
+            <div style={{background:"#1e1515",border:"1px solid #3d1515",borderRadius:4,padding:"10px 12px",marginBottom:10}}>
+              <div style={{fontSize:10,color:"#f87171",marginBottom:3}}>⚠ TOP RED TEAM RISK</div>
+              <div style={{fontSize:12,color:"#fca5a5"}}>{r.topRisk}</div>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8}}>
+              {[
+                {label:"Entry Trigger", val:r.entry,  color:"#64748b"},
+                {label:"Stop Loss",     val:r.stop,   color:"#f87171"},
+                {label:"Scale-Out 1",   val:r.t1,     color:"#4ade80"},
+                {label:"Scale-Out 2",   val:r.t2,     color:"#4ade80"},
+              ].map(f=>(
+                <div key={f.label} style={{background:"#161925",borderRadius:4,padding:"8px 10px"}}>
+                  <div style={{fontSize:10,color:"#64748b",marginBottom:3}}>{f.label}</div>
+                  <div style={{fontSize:12,fontWeight:600,color:f.color,fontFamily:"monospace"}}>{f.val}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Watchlist */}
+      <div style={{marginTop:20}}>
+        <SectionTitle color="#1e4d2b">WATCHLIST  |  Pending Research</SectionTitle>
+        <Table headers={["Ticker","Company","Reason to Watch","Priority","Date Added","Notes"]}>
+          {WATCHLIST.map((w,i) => (
+            <TR key={w.ticker} even={i%2===0}>
+              <TD><strong style={{color:"#60a5fa"}}>{w.ticker}</strong></TD>
+              <TD style={{color:"#94a3b8",fontSize:11}}>{w.company}</TD>
+              <TD style={{fontSize:12}}>{w.reason}</TD>
+              <TD>{riskBadge(w.priority)}</TD>
+              <TD style={{color:"#64748b",fontSize:11}}>{w.added}</TD>
+              <TD style={{color:"#94a3b8",fontSize:11}}>{w.notes}</TD>
+            </TR>
+          ))}
+        </Table>
+      </div>
+    </div>
+  );
+}
+
+function CheckSection({title, checks}) {
+  return (
+    <div style={{marginBottom:20}}>
+      <SectionTitle>{title}</SectionTitle>
+      <Table headers={["Metric / Check","Frequency","Current Status","Trigger Threshold","Action if Triggered","Status"]}>
+        {checks.map((c,i) => {
+          const rowBg = c.status==="alert" ? "#1e1010" : c.status==="warn" ? "#1e1a08" : undefined;
+          return (
+            <TR key={i} even={i%2===0}>
+              <TD style={{fontWeight:600,background:rowBg}}>{c.metric}</TD>
+              <TD style={{color:"#64748b",fontSize:11,background:rowBg}}>{c.freq}</TD>
+              <TD style={{background:rowBg}}>
+                <span style={{
+                  color: c.status==="alert"?"#f87171":c.status==="warn"?"#fbbf24":"#e2e8f0",
+                  fontWeight: c.status!=="ok"?700:400,
+                  fontSize:12
+                }}>{c.current}</span>
+              </TD>
+              <TD style={{fontSize:11,color:"#94a3b8",background:rowBg}}>{c.trigger}</TD>
+              <TD style={{fontSize:11,color:"#e2e8f0",background:rowBg}}>{c.action}</TD>
+              <TD style={{background:rowBg}}>{statusDot(c.status)}</TD>
+            </TR>
+          );
+        })}
+      </Table>
+    </div>
+  );
+}
+
+function MonitoringTab() {
+  const allAlerts = [...MU_CHECKS,...PLTR_CHECKS,...HIMS_CHECKS].filter(c=>c.status==="alert"||c.status==="warn");
+  return (
+    <div>
+      {allAlerts.length > 0 && (
+        <div style={{background:"#1e1010",border:"1px solid #7f1d1d",borderRadius:6,padding:12,marginBottom:16}}>
+          <div style={{fontWeight:700,color:"#f87171",marginBottom:8}}>⚠ {allAlerts.length} ACTIVE ALERTS / WATCHES</div>
+          {allAlerts.map((c,i)=>(
+            <div key={i} style={{fontSize:12,color:"#fca5a5",marginBottom:3}}>
+              <span style={{color:c.status==="alert"?"#f87171":"#fbbf24",marginRight:6}}>
+                {c.status==="alert"?"●":"○"}
+              </span>
+              <strong>{c.metric}</strong>: {c.current} — {c.action}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <CheckSection title="MU — MICRON TECHNOLOGY  |  Monitoring Checklist" checks={MU_CHECKS}/>
+      <CheckSection title="PLTR — PALANTIR TECHNOLOGIES  |  Monitoring Checklist" checks={PLTR_CHECKS}/>
+      <CheckSection title="HIMS — HIMS & HERS HEALTH  |  Monitoring Checklist" checks={HIMS_CHECKS}/>
+
+      {/* Cadence reminder */}
+      <div style={{marginTop:16,display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        <div style={{background:"#1a1d27",border:"1px solid #2e3650",borderRadius:6,padding:12}}>
+          <div style={{fontWeight:700,color:"#60a5fa",marginBottom:8}}>📅 WEEKLY REVIEW (5 min)</div>
+          {["Is every position above its structural stop?","Any competitor major announcements?","Any geopolitical news affecting semis or healthcare?","RSI crossed above 70 or below 30 on any position?","Did any scale-out target get triggered?"].map((t,i)=>(
+            <div key={i} style={{fontSize:12,color:"#94a3b8",marginBottom:4}}>☐ {t}</div>
+          ))}
+        </div>
+        <div style={{background:"#1a1d27",border:"1px solid #2e3650",borderRadius:6,padding:12}}>
+          <div style={{fontWeight:700,color:"#60a5fa",marginBottom:8}}>📊 POST-EARNINGS REVIEW</div>
+          {["Revenue growth rate: accelerating or decelerating?","Management raised, held, or cut guidance?","Any changes in language around the core thesis driver?","Did any thesis violation criteria trigger?","Does the stop-loss level need to be adjusted upward?"].map((t,i)=>(
+            <div key={i} style={{fontSize:12,color:"#94a3b8",marginBottom:4}}>☐ {t}</div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── APP ───────────────────────────────────────────────────────────────────────
+
+const TABS = [
+  {id:"portfolio", label:"📊 Portfolio"},
+  {id:"research",  label:"🔬 Research Log"},
+  {id:"monitoring",label:"🔔 Monitoring"},
+];
+
+function App() {
+  const [tab, setTab] = useState("portfolio");
+
+  const alertCount = [...MU_CHECKS,...PLTR_CHECKS,...HIMS_CHECKS].filter(c=>c.status==="alert").length;
+
+  return (
+    <div style={{maxWidth:1400,margin:"0 auto",padding:"0 0 40px 0"}}>
+      {/* Header */}
+      <div style={{background:"linear-gradient(135deg,#0f1117 0%,#1a1d27 100%)",borderBottom:"1px solid #2e3650",padding:"18px 24px"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
+          <div>
+            <div style={{fontSize:20,fontWeight:800,color:"#e2e8f0",letterSpacing:"-0.02em"}}>
+              📈 Long-Term Trade Strategy
+            </div>
+            <div style={{fontSize:12,color:"#64748b",marginTop:2}}>
+              Portfolio Dashboard  ·  {AS_OF}  ·  {fmt$(totalValue)} AUM
+            </div>
+          </div>
+          {alertCount > 0 && (
+            <div style={{background:"#3d1515",border:"1px solid #7f1d1d",borderRadius:6,padding:"6px 12px",color:"#f87171",fontWeight:700,fontSize:12}} className="pulse">
+              ⚠ {alertCount} ALERT{alertCount>1?"S":""} REQUIRE ACTION
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Tab Nav */}
+      <div style={{display:"flex",gap:0,background:"#161925",borderBottom:"1px solid #2e3650",paddingLeft:16}}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{
+            background: tab===t.id ? "#1a1d27" : "transparent",
+            color: tab===t.id ? "#60a5fa" : "#64748b",
+            border:"none",
+            borderBottom: tab===t.id ? "2px solid #60a5fa" : "2px solid transparent",
+            padding:"12px 20px",
+            fontSize:13,
+            fontWeight:600,
+            cursor:"pointer",
+            transition:"all 0.15s",
+          }}>
+            {t.label}
+            {t.id==="monitoring" && alertCount>0 && (
+              <span style={{marginLeft:6,background:"#7f1d1d",color:"#fca5a5",borderRadius:10,padding:"1px 6px",fontSize:10}}>{alertCount}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={{padding:"20px 24px"}}>
+        {tab==="portfolio"  && <PortfolioTab/>}
+        {tab==="research"   && <ResearchTab/>}
+        {tab==="monitoring" && <MonitoringTab/>}
+      </div>
+
+      {/* Footer */}
+      <div style={{textAlign:"center",color:"#334155",fontSize:11,padding:"16px 0",borderTop:"1px solid #1e2235"}}>
+        For analytical purposes only · Not financial advice · Update prices manually as needed
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
