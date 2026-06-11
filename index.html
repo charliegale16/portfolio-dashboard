@@ -43,22 +43,30 @@ const HOLDINGS = [
   { ticker:"HIMS", company:"Hims & Hers Health",          shares:156.07,     price:28.98,  targetPct:13,  stop:"$22.50",so1:"$38",   so2:"$50",   action:"TRIM",  risk:"VERY HIGH",nextCatalyst:"Earnings ~Aug 2026", thesisStatus:"shifting", notes:"DOJ referral active. GLP-1 franchise contracting ~31%. Margin compression." },
   { ticker:"VTI",  company:"Vanguard Total Market ETF",   shares:10.61,      price:364.30, targetPct:18,  stop:"$310",  so1:"N/A",   so2:"N/A",   action:"HOLD",  risk:"LOW",      nextCatalyst:"Continuous",         thesisStatus:"intact",   notes:"Sole true diversifier. Only non-correlated holding." },
   { ticker:"SMH",  company:"VanEck Semiconductor ETF",    shares:6.32,       price:588.07, targetPct:17,  stop:"$490",  so1:"$700",  so2:"$850",  action:"HOLD",  risk:"MEDIUM",   nextCatalyst:"Sector earnings",    thesisStatus:"intact",   notes:"Contains ~2-3% MU exposure. Adding direct MU increases semi concentration." },
-  { ticker:"MSFT", company:"Microsoft Corporation",       shares:2.71,       price:398.47, targetPct:7,   stop:"$340",  so1:"$450",  so2:"$520",  action:"HOLD",  risk:"LOW",      nextCatalyst:"Earnings ~Jul 2026", thesisStatus:"intact",   notes:"Underweight given quality. Consider adding post-PLTR trim." },
+  { ticker:"MSFT", company:"Microsoft Corporation",       shares:2.71,       price:452.00, targetPct:7,   stop:"$370",  so1:"$520",  so2:"$600",  action:"HOLD",  risk:"LOW",      nextCatalyst:"Earnings ~Jul 2026", thesisStatus:"intact",   notes:"Updated price $452. -12% YTD on $190B capex concern. Azure +40%, AI ARR >$37B. Strong 3-5yr compounder — consider adding post-PLTR trim." },
   { ticker:"SNDK", company:"SanDisk Corporation",         shares:0.020030,   price:1744.32,targetPct:0,   stop:"N/A",   so1:"N/A",   so2:"N/A",   action:"CLOSE", risk:"N/A",      nextCatalyst:"N/A",                thesisStatus:"none",     notes:"$34.94 position — rounding error. Close or build a real thesis." },
   { ticker:"BODI", company:"Beachbody Company",           shares:0.323347,   price:10.23,  targetPct:0,   stop:"N/A",   so1:"N/A",   so2:"N/A",   action:"CLOSE", risk:"N/A",      nextCatalyst:"N/A",                thesisStatus:"none",     notes:"$3.31 position. Close and redeploy." },
 ];
 
 const RESEARCH = [
-  { ticker:"MU",   company:"Micron Technology",       date:"Jun 11, 2026", price:"$926",  macroBias:"Bullish",  techBias:"Bullish above $900",     fundRating:"Strong",  thesis:"AI memory supercycle: HBM TAM $35B→$100B by 2028. Micron #2 HBM supplier at 21% share.",    topRisk:"Demand pull-forward: hyperscaler capex pause unwinds entire thesis",             entry:"T1 entered ~$926; T2 pending Jun 24 earnings confirm", stop:"$820",  t1:"$1,150", t2:"$1,300", status:"active"   },
-  { ticker:"PLTR", company:"Palantir Technologies",   date:"Jun 11, 2026", price:"$128",  macroBias:"Bullish",  techBias:"Deteriorating — below $130", fundRating:"Strong / Extreme Val.", thesis:"AIP platform with high switching costs across gov + commercial AI. Rule of 40: 145%.", topRisk:"Multiple compression: P/E 154×→80× = 48% price decline, zero biz deterioration", entry:"Held — TRIM to 20% ($4,414) before adding new positions",  stop:"$107", t1:"$160",   t2:"$195",   status:"overweight"},
-  { ticker:"HIMS", company:"Hims & Hers Health",      date:"Jun 11, 2026", price:"$29",   macroBias:"Cautious", techBias:"Volatile/binary",           fundRating:"Thesis shifting",  thesis:"Pivoting from cheap compounded GLP-1 disruptor to Novo Nordisk branded distributor.",   topRisk:"DOJ investigation materializes → existential legal overhang",                   entry:"Held — TRIM to 12-15% ($2,648–$3,311)",                   stop:"$22.50",t1:"$38",   t2:"$50",    status:"overweight"},
+  { ticker:"MU",   company:"Micron Technology",         date:"Jun 11, 2026", price:"$926",   macroBias:"Bullish",  techBias:"Bullish above $900; ATH $1,089; ATH retest = bull confirm",          fundRating:"Strong",              thesis:"AI memory supercycle: HBM TAM $35B→$100B by 2028. Micron #2 HBM supplier at 21% share. All 2026 HBM supply sold out.",                                              topRisk:"Demand pull-forward: hyperscaler capex pause unwinds entire thesis",                                                   entry:"T1 entered ~$926; T2 pending Jun 24 earnings confirm",                       stop:"$820",   t1:"$1,150", t2:"$1,300", status:"active",     conviction:"High"      },
+  { ticker:"PLTR", company:"Palantir Technologies",     date:"Jun 11, 2026", price:"$128",   macroBias:"Bullish",  techBias:"Deteriorating — below $130 support; RSI 37",                        fundRating:"Strong / Extreme Val.",thesis:"AIP platform with high switching costs across gov + commercial AI. Rule of 40: 145%. US commercial +133% YoY.",                                          topRisk:"Multiple compression: P/E 154x to 80x = 48% price decline with zero biz deterioration",                              entry:"Held — TRIM to 20% ($4,414) before adding new positions",                    stop:"$107",   t1:"$160",   t2:"$195",   status:"overweight",  conviction:"High"      },
+  { ticker:"HIMS", company:"Hims & Hers Health",        date:"Jun 11, 2026", price:"$29",    macroBias:"Cautious", techBias:"Volatile/binary; $22-$24 key support",                              fundRating:"Thesis shifting",     thesis:"Pivoting from cheap compounded GLP-1 disruptor to Novo Nordisk branded distributor. FY2026E rev $2.8-3.0B. 2030 target $6.5B.",                                topRisk:"DOJ investigation materializes — existential legal overhang",                                                          entry:"Held — TRIM to 12-15% ($2,648-$3,311)",                                      stop:"$22.50", t1:"$38",    t2:"$50",    status:"overweight",  conviction:"Medium"    },
+  { ticker:"GOOG", company:"Alphabet",                  date:"Jun 11, 2026", price:"~$185",  macroBias:"Bullish",  techBias:"Bullish — 11 consecutive qtrs double-digit growth; undemanding val",fundRating:"Very Strong",         thesis:"Search monopoly + GCP +63% YoY + AI-native infra. Q1 rev $109.9B (+22%), op margin 36.1% (+300bps). $84.75B equity raise for AI compute. Avg PT $493.",topRisk:"DOJ antitrust: potential structural Search remedies; AI search disruption from Perplexity/ChatGPT eroding query volume", entry:"Not entered — high conviction candidate. Ideal entry on any broad market pullback.",stop:"$155",  t1:"$230",   t2:"$280",   status:"research",    conviction:"High"      },
+  { ticker:"MSFT", company:"Microsoft Corporation",     date:"Jun 11, 2026", price:"$452",   macroBias:"Bullish",  techBias:"-12% YTD from ~$515; potential 3-5yr entry at current levels",     fundRating:"Very Strong",         thesis:"Enterprise AI platform leader. Azure +40%, AI ARR >$37B run rate, 80% Fortune 500 on Azure AI. $190B capex building long-term moat. EPS $4.27 adj (beat).",  topRisk:"$190B capex ROI uncertainty; Copilot monetization scaling lag; OpenAI dependency and pricing structure",              entry:"Held at 5% — consider adding to 10-12% post-PLTR trim at current ~$452 entry", stop:"$370",   t1:"$520",   t2:"$600",   status:"held",        conviction:"High"      },
+  { ticker:"NET",  company:"Cloudflare",                date:"Jun 11, 2026", price:"~$223",  macroBias:"Bullish",  techBias:"~7% pullback from $272 ATH (Jun 2); watching $200-210 support",    fundRating:"Strong",              thesis:"Network security + edge + AI inference layer. Zero Trust, DDoS, WAF, Workers AI. FY2026E rev $2.79B (+29%). No fundamental catalyst for pullback. Avg PT $234, MS $305.", topRisk:"Premium valuation (~30-35x fwd revenue); multi-front competition vs CRWD, PANW, ZS across product lines",           entry:"Not entered — ideal entry $200-210 zone on continued consolidation",          stop:"$185",   t1:"$270",   t2:"$305",   status:"research",    conviction:"Medium-High"},
+  { ticker:"CEG",  company:"Constellation Energy",      date:"Jun 11, 2026", price:"~$267",  macroBias:"Bullish",  techBias:"-27% YTD; avg analyst PT $368 (+38% upside); oversold",           fundRating:"Strong — thesis intact, near-term guide miss", thesis:"Largest US nuclear fleet (55GW). AI data center 24/7 carbon-free power demand. 1,100+ MW signed with CyrusOne. 80% of Fortune 100 customers. $5B buyback. 2026 EPS guide $11-12.", topRisk:"Regulatory/permitting delays on capacity additions; O&M inflation; earnings guide below consensus caused -12% weekly drop", entry:"Re-entry candidate — wait for regulatory overhang to clear; watch $245-255 support",stop:"$230",  t1:"$330",   t2:"$368",   status:"research",    conviction:"Medium-High"},
+  { ticker:"NLR",  company:"VanEck Uranium+Nuclear ETF",date:"Jun 11, 2026", price:"~$139",  macroBias:"Bullish",  techBias:"2026 forecast ~$158; near-term valuations stretched",              fundRating:"Moderate — thematic ETF, less alpha vs single names", thesis:"Diversified nuclear renaissance: uranium producers (Cameco, Kazatomprom) + utilities (CEG, Vistra). Big Tech PPA demand + Trump uranium as critical mineral.",    topRisk:"Uranium price/production risk; 10+ year regulatory timelines for new builds; less alpha than CEG/VST direct",         entry:"Portfolio completion trade — size only after CEG/VST individual positions established",stop:"$120", t1:"$158",   t2:"$175",   status:"research",    conviction:"Medium"    },
+  { ticker:"NU",   company:"Nu Holdings (Nubank)",      date:"Jun 11, 2026", price:"~$11.93",macroBias:"Cautious", techBias:"-20% last 90 days; BofA PT $16 (trimmed from $17)",                fundRating:"Strong fundamentals / EM execution risk", thesis:"Largest digital bank in LatAm (135M customers). Q1 rev $5.3B record, NI $871M record, ROE 29%. ~14x 2026E earnings with 39% rev growth. US bank charter application.",      topRisk:"BRL/MXN FX volatility is major USD earnings headwind; 2 consecutive quarterly disappointments; credit quality risk if Brazil macro deteriorates", entry:"Not entered — requires EM/FX risk tolerance. Monitor Q3 2026 for third consecutive data point before sizing.", stop:"$9.50",  t1:"$14",    t2:"$16",    status:"research",    conviction:"Medium"    },
 ];
 
 const WATCHLIST = [
-  { ticker:"NVDA", company:"Nvidia",               reason:"Core HBM customer — validates/invalidates MU thesis directly",  priority:"HIGH",   added:"Jun 11, 2026", notes:"Supplier mix disclosures are the #1 forward indicator for MU and PLTR." },
-  { ticker:"AMD",  company:"Advanced Micro Devices",reason:"Alt AI chip exposure; potential MU HBM4 customer if Nvidia allocation shifts", priority:"MEDIUM", added:"Jun 11, 2026", notes:"If Nvidia reduces MU allocation, AMD relationship becomes critical." },
-  { ticker:"AMAT", company:"Applied Materials",     reason:"Semi equipment; less Taiwan concentration than MU",             priority:"MEDIUM", added:"Jun 11, 2026", notes:"Geopolitical hedge — benefits from onshoring regardless of HBM race winner." },
-  { ticker:"HXSCL",company:"SK Hynix (ADR)",        reason:"HBM market leader at 62% share; rotation hedge vs MU",         priority:"MEDIUM", added:"Jun 11, 2026", notes:"Red team hedge if Samsung recovers — rotate here before reducing MU." },
+  { ticker:"NVDA", company:"Nvidia",                reason:"Core HBM customer — validates/invalidates MU thesis directly",                  priority:"HIGH",   added:"Jun 11, 2026", notes:"Supplier mix disclosures are the #1 forward indicator for MU and PLTR." },
+  { ticker:"AMD",  company:"Advanced Micro Devices", reason:"Alt AI chip exposure; potential MU HBM4 customer if Nvidia allocation shifts",  priority:"MEDIUM", added:"Jun 11, 2026", notes:"If Nvidia reduces MU allocation, AMD relationship becomes critical." },
+  { ticker:"AMAT", company:"Applied Materials",      reason:"Semi equipment; less Taiwan concentration than MU",                             priority:"MEDIUM", added:"Jun 11, 2026", notes:"Geopolitical hedge — benefits from onshoring regardless of HBM race winner." },
+  { ticker:"HXSCL",company:"SK Hynix (ADR)",         reason:"HBM market leader at 62% share; within-sector rotation hedge vs MU",           priority:"MEDIUM", added:"Jun 11, 2026", notes:"Red team hedge if Samsung recovers — rotate here before reducing MU." },
+  { ticker:"ZS",   company:"Zscaler",                reason:"Zero Trust SASE — sound business but -32% post-earnings on growth decel. Watch before building position.", priority:"LOW-WATCH", added:"Jun 11, 2026", notes:"FY27 ARR guidance 16-17% vs Street 19-20%. Lost 2 senior sales leaders. Need 1-2 more qtrs bookings data to confirm if decel is temporary (leadership) or structural (PANW competition). Do NOT enter yet." },
+  { ticker:"VST",  company:"Vistra Energy",           reason:"Nuclear + gas power; CEG comp. Benefits from same AI data center power demand thesis.", priority:"MEDIUM", added:"Jun 11, 2026", notes:"Analyze alongside CEG — pair trade or pick best-of-breed in nuclear/power theme." },
 ];
 
 const MU_CHECKS = [
@@ -182,6 +190,7 @@ function PortfolioTab() {
         <Card label="Positions" value={HOLDINGS.length} sub="7 holdings" />
         <Card label="Largest Position" value="PLTR" sub={`${fmtPct((HOLDINGS[0].shares*HOLDINGS[0].price)/totalValue)} of portfolio`} accent="#f87171"/>
         <Card label="AI / Tech Exposure" value={fmtPct(ai_tech/totalValue)} sub="PLTR + MSFT + SMH" accent="#fbbf24"/>
+        <Card label="Tickers Researched" value={RESEARCH.length} sub={`${RESEARCH.filter(r=>r.conviction==="High").length} High conviction`} accent="#60a5fa"/>
         <Card label="Positions Needing Action" value={HOLDINGS.filter(h=>h.action!=="HOLD").length} sub="Trim or Close" accent="#f87171"/>
         <Card label="Max Single Position" value="20%" sub={fmt$(PORTFOLIO_SIZE*0.20)+" limit"} accent="#4ade80"/>
       </div>
@@ -261,7 +270,15 @@ function ResearchTab() {
   const statusBadge = s => {
     if (s==="active")     return <span className="badge badge-green">🟢 Active</span>;
     if (s==="overweight") return <span className="badge badge-red">🔴 Overweight</span>;
+    if (s==="held")       return <span className="badge badge-blue">🔵 Held</span>;
+    if (s==="research")   return <span className="badge badge-amber">🔬 Research</span>;
     return <span className="badge badge-grey">{s}</span>;
+  };
+
+  const convictionBadge = c => {
+    if (!c) return null;
+    const map = {"High":"badge-green","Medium-High":"badge-blue","Medium":"badge-amber","Low":"badge-grey"};
+    return <span className={`badge ${map[c]||"badge-grey"}`}>{c}</span>;
   };
 
   const macroBadge = m => {
@@ -280,7 +297,10 @@ function ResearchTab() {
               <span style={{fontSize:20,fontWeight:800,color:"#60a5fa"}}>{r.ticker}</span>
               <span style={{color:"#64748b",fontSize:13}}>{r.company}</span>
               <span style={{color:"#64748b",fontSize:11}}>Analyzed {r.date} @ {r.price}</span>
-              <div style={{marginLeft:"auto"}}>{statusBadge(r.status)}</div>
+              <div style={{marginLeft:"auto",display:"flex",gap:6,alignItems:"center"}}>
+                {r.conviction && convictionBadge(r.conviction)}
+                {statusBadge(r.status)}
+              </div>
             </div>
 
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:10,marginBottom:12}}>
@@ -332,7 +352,7 @@ function ResearchTab() {
               <TD><strong style={{color:"#60a5fa"}}>{w.ticker}</strong></TD>
               <TD style={{color:"#94a3b8",fontSize:11}}>{w.company}</TD>
               <TD style={{fontSize:12}}>{w.reason}</TD>
-              <TD>{riskBadge(w.priority)}</TD>
+              <TD>{w.priority==="LOW-WATCH" ? <span className="badge badge-grey">👁 WATCH</span> : riskBadge(w.priority)}</TD>
               <TD style={{color:"#64748b",fontSize:11}}>{w.added}</TD>
               <TD style={{color:"#94a3b8",fontSize:11}}>{w.notes}</TD>
             </TR>
