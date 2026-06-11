@@ -433,12 +433,218 @@ function MonitoringTab() {
   );
 }
 
+// ── RECOMMENDATIONS TAB ──────────────────────────────────────────────────────
+
+function RecommendationsTab() {
+  const totalRisk = 189 + 224 + 190;
+  const riskBudget = 1324;
+
+  return (
+    <div>
+      {/* Risk Budget Banner */}
+      <div style={{background:"#0d1f3c",border:"1px solid #1e3a5f",borderRadius:8,padding:"14px 18px",marginBottom:20,display:"flex",alignItems:"center",gap:24,flexWrap:"wrap"}}>
+        <div>
+          <div style={{fontSize:11,color:"#64748b",marginBottom:2}}>TOTAL RISK DEPLOYED (MU + GOOG + MSFT)</div>
+          <div style={{fontSize:20,fontWeight:800,color:"#60a5fa",fontFamily:"monospace"}}>${totalRisk} <span style={{fontSize:13,color:"#64748b"}}>/ ${riskBudget.toLocaleString()} budget</span></div>
+        </div>
+        <div style={{flex:1,minWidth:180}}>
+          <div style={{height:8,background:"#1e2235",borderRadius:4,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${(totalRisk/riskBudget)*100}%`,background:"linear-gradient(90deg,#22c55e,#4ade80)",borderRadius:4,transition:"width 0.4s"}}/>
+          </div>
+          <div style={{fontSize:11,color:"#64748b",marginTop:4}}>{((totalRisk/riskBudget)*100).toFixed(0)}% of 6% risk capacity used — room for one more full starter</div>
+        </div>
+        <div style={{background:"#0f2e1a",borderRadius:6,padding:"8px 14px",border:"1px solid #14532d"}}>
+          <div style={{fontSize:11,color:"#4ade80",fontWeight:700}}>✓ WITHIN LIMITS</div>
+          <div style={{fontSize:11,color:"#64748b"}}>Max 6% = $1,324</div>
+        </div>
+      </div>
+
+      {/* Actionable Now */}
+      <SectionTitle color="#14532d">✅  ACTIONABLE NOW</SectionTitle>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(340px,1fr))",gap:14,marginBottom:20}}>
+        {RECS_ACTIONABLE.map(r => (
+          <div key={r.ticker} style={{background:"#0f1e0f",border:"1px solid #166534",borderRadius:8,padding:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+              <span style={{fontSize:20,fontWeight:800,color:"#4ade80"}}>{r.ticker}</span>
+              <span style={{color:"#64748b",fontSize:12}}>{r.company}</span>
+              <span className="badge badge-green" style={{marginLeft:"auto"}}>{r.action}</span>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+              {[
+                {label:"Position Size", val:r.size,    color:"#e2e8f0"},
+                {label:"Entry Zone",    val:r.entry,   color:"#60a5fa"},
+                {label:"Stop Loss",     val:`${r.stop} (${r.stopPct})`, color:"#f87171"},
+                {label:"Risk Committed",val:r.risk,    color:"#fbbf24"},
+              ].map(f => (
+                <div key={f.label} style={{background:"#161f16",borderRadius:4,padding:"8px 10px"}}>
+                  <div style={{fontSize:10,color:"#64748b",marginBottom:2}}>{f.label}</div>
+                  <div style={{fontSize:13,fontWeight:700,color:f.color,fontFamily:"monospace"}}>{f.val}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{background:"#0d1a0d",borderRadius:4,padding:"10px 12px",marginBottom:10,fontSize:12,color:"#a7f3d0",lineHeight:1.5}}>
+              {r.rationale}
+            </div>
+            <div style={{background:"#1e1010",border:"1px solid #3d1515",borderRadius:4,padding:"8px 10px"}}>
+              <span style={{fontSize:10,color:"#f87171",fontWeight:700}}>⚠ THESIS VIOLATION TRIGGER: </span>
+              <span style={{fontSize:11,color:"#fca5a5"}}>{r.violation}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Watchlist */}
+      <SectionTitle color="#78350f">👁  WATCHLIST — NOT ACTIONABLE YET</SectionTitle>
+      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
+        {RECS_WATCHLIST.map(r => (
+          <div key={r.ticker} style={{background:"#1a1500",border:"1px solid #78350f",borderRadius:8,padding:"14px 16px",display:"flex",gap:16,flexWrap:"wrap"}}>
+            <div style={{minWidth:80}}>
+              <div style={{fontSize:16,fontWeight:800,color:"#fbbf24"}}>{r.ticker}</div>
+              <div style={{fontSize:11,color:"#64748b"}}>{r.company}</div>
+              <div style={{marginTop:6}}>
+                <div style={{fontSize:10,color:"#64748b"}}>Entry zone</div>
+                <div style={{fontSize:13,fontWeight:700,color:"#60a5fa",fontFamily:"monospace"}}>{r.entry}</div>
+              </div>
+            </div>
+            <div style={{flex:1,minWidth:200}}>
+              <div style={{fontSize:12,color:"#e2e8f0",marginBottom:6,lineHeight:1.5}}>{r.rationale}</div>
+              <div style={{background:"#1a1205",borderRadius:4,padding:"6px 10px",border:"1px solid #78350f"}}>
+                <span style={{fontSize:10,color:"#fbbf24",fontWeight:700}}>TRIGGER TO RE-EVALUATE: </span>
+                <span style={{fontSize:11,color:"#fde68a"}}>{r.trigger}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pass */}
+      <SectionTitle color="#4b1515">❌  PASS</SectionTitle>
+      <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
+        {RECS_PASS.map(r => (
+          <div key={r.ticker} style={{background:"#130d0d",border:"1px solid #3d1515",borderRadius:6,padding:"12px 14px",display:"flex",gap:14,alignItems:"flex-start"}}>
+            <div style={{minWidth:60}}>
+              <div style={{fontSize:14,fontWeight:800,color:"#f87171"}}>{r.ticker}</div>
+              <div style={{fontSize:10,color:"#64748b"}}>{r.company}</div>
+            </div>
+            <div style={{fontSize:12,color:"#94a3b8",lineHeight:1.5}}>{r.reason}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Summary Table */}
+      <SectionTitle>SUMMARY TABLE</SectionTitle>
+      <Table headers={["Ticker","Action","Size","Stop","Risk","Status"]}>
+        {REC_SUMMARY.map((r,i) => {
+          const statusColors = {
+            active:  {bg:"#0f2e1a", color:"#4ade80",  label:"🟢 Active"},
+            enter:   {bg:"#0d1f3c", color:"#60a5fa",  label:"🔵 Enter Now"},
+            optional:{bg:"#1e1a08", color:"#fbbf24",  label:"🟡 Optional"},
+            watch:   {bg:"#1a1500", color:"#fb923c",  label:"👁 Watch"},
+            pass:    {bg:"#1e0d0d", color:"#f87171",  label:"❌ Pass"},
+          };
+          const sc = statusColors[r.status] || {bg:"#1a1d27",color:"#94a3b8",label:r.status};
+          return (
+            <TR key={r.ticker} even={i%2===0}>
+              <TD><strong style={{color:"#60a5fa"}}>{r.ticker}</strong></TD>
+              <TD style={{fontSize:12}}>{r.action}</TD>
+              <TD style={{fontFamily:"monospace",color:"#e2e8f0"}}>{r.size}</TD>
+              <TD style={{fontFamily:"monospace",color:"#f87171"}}>{r.stop}</TD>
+              <TD style={{fontFamily:"monospace",color:"#fbbf24",fontWeight:700}}>{r.risk}</TD>
+              <TD><span style={{background:sc.bg,color:sc.color,padding:"2px 8px",borderRadius:4,fontSize:11,fontWeight:600}}>{sc.label}</span></TD>
+            </TR>
+          );
+        })}
+        <TR>
+          <TD colSpan={4}><strong>Total Risk (MU + GOOG + MSFT)</strong></TD>
+          <TD><strong style={{color:"#60a5fa",fontFamily:"monospace"}}>${totalRisk}</strong></TD>
+          <TD><span style={{color:"#4ade80",fontSize:11}}>{((totalRisk/riskBudget)*100).toFixed(0)}% of $1,324 budget</span></TD>
+        </TR>
+      </Table>
+
+      {/* Scale-Out Explainer */}
+      <div style={{marginTop:16,background:"#0d1f3c",border:"1px solid #1e3a5f",borderRadius:6,padding:"14px 16px"}}>
+        <div style={{fontWeight:700,color:"#60a5fa",marginBottom:10,fontSize:13}}>📖 Scale-Out 1 and Scale-Out 2 — How They Work</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,flexWrap:"wrap"}}>
+          {[
+            {label:"Scale-Out 1 (+20-25%)", desc:"Sell 25% of your position. A partial profit-take, not a full exit. Locks in gains while keeping most of the position working.", color:"#4ade80"},
+            {label:"Scale-Out 2 (+35-45%)", desc:"Sell another 25%. After this you've recovered most of your initial outlay. The remaining 50% is essentially running on house money.", color:"#4ade80"},
+            {label:"Trailing Stop (remaining 50%)", desc:"Apply a 15% trailing stop on weekly closes after Scale-Out 2. If the stock drops 15% from its high, you exit the rest — captures the bulk of a supercycle run without needing to predict the top.", color:"#60a5fa"},
+          ].map(s => (
+            <div key={s.label} style={{background:"#0f172a",borderRadius:4,padding:"10px 12px"}}>
+              <div style={{fontSize:11,fontWeight:700,color:s.color,marginBottom:4}}>{s.label}</div>
+              <div style={{fontSize:11,color:"#94a3b8",lineHeight:1.5}}>{s.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── APP ───────────────────────────────────────────────────────────────────────
 
+const RECS_ACTIONABLE = [
+  {
+    ticker:"GOOG", company:"Alphabet", action:"Enter — Starter Tranche",
+    size:"$1,655 (7.5%)", entry:"~$180–185", stop:"~$160", stopPct:"-13.5%", risk:"~$224",
+    rationale:"Strongest risk/reward on the list. Trading at $185 with a $493 consensus PT — not a stretched valuation for a company printing 22% revenue growth, 36% operating margins, and 63% cloud acceleration. The DOJ antitrust risk is real but slow-moving and already known.",
+    violation:"Google Cloud deceleration below 30% YoY growth, OR DOJ structural remedy requiring Search divestiture.",
+  },
+  {
+    ticker:"MSFT", company:"Microsoft", action:"Enter — Starter Tranche",
+    size:"$1,655 (7.5%)", entry:"~$450–455", stop:"~$400", stopPct:"-11.5%", risk:"~$190",
+    rationale:"The $190B capex concern is legitimate but entirely priced in at -12% YTD. $37B AI ARR run rate growing at 40% Azure is the real number. This is a 3–5 year compounder — paying $452 for that compounding quality is not expensive.",
+    violation:"Azure growth deceleration below 25% in two consecutive quarters, OR Copilot enterprise attach rate stalls in management commentary.",
+  },
+];
+
+const RECS_WATCHLIST = [
+  {
+    ticker:"CEG", company:"Constellation Energy",
+    trigger:"Q3 2026 earnings with stable/raised guidance, OR confirmed new data center PPA announcement.",
+    entry:"$240–250",
+    rationale:"The structural thesis is correct: nuclear is the only scalable 24/7 zero-carbon power source and AI data center demand is real. But -27% YTD was triggered by a fresh earnings guide miss and TMI restart delays. Don't buy into negative momentum without a confirming catalyst.",
+  },
+  {
+    ticker:"NET", company:"Cloudflare",
+    trigger:"Pullback to $190–200 (prior consolidation range), compressing multiple to ~27× — a more defensible starter entry.",
+    entry:"$190–200",
+    rationale:"30–35× forward revenue is a steep starting multiple even for a platform play. The 7% pullback from ATH is not enough. Watch for a deeper consolidation before entering.",
+  },
+  {
+    ticker:"NU", company:"Nu Holdings (Nubank)",
+    trigger:"Optional speculative — cap at 3-4% ($660-$880), stop $10.50 (-12%), risk ~$80. Only if conviction on Brazil macro holding.",
+    entry:"~$11.93",
+    rationale:"Valuation gap is genuinely attractive: 14× forward earnings with 39% revenue growth and 29% ROE at $12 vs. $16 BofA PT. Two consecutive misses and FX risk require sizing discipline. Treat as a speculative satellite, not a core position.",
+  },
+];
+
+const RECS_PASS = [
+  {
+    ticker:"NLR", company:"VanEck Uranium+Nuclear ETF",
+    reason:"Inferior alpha vs. direct CEG/nuclear stock exposure. Skip unless you specifically want diversified uranium miner exposure with lower volatility.",
+  },
+  {
+    ticker:"ZS", company:"Zscaler",
+    reason:"Sales leadership exits + deliberate management guidance cut below consensus = execution risk, not just valuation risk. Minimum one clean quarter of ARR re-acceleration before building a position. Re-evaluate at Q1 FY2027 earnings (September/October 2026).",
+  },
+];
+
+const REC_SUMMARY = [
+  { ticker:"MU",   action:"Active — hold",         size:"$1,655", stop:"$820",   risk:"~$189", status:"active"   },
+  { ticker:"GOOG", action:"Enter — starter",        size:"$1,655", stop:"$160",   risk:"~$224", status:"enter"    },
+  { ticker:"MSFT", action:"Enter — starter",        size:"$1,655", stop:"$400",   risk:"~$190", status:"enter"    },
+  { ticker:"NU",   action:"Optional speculative",   size:"$660–880",stop:"$10.50",risk:"~$80",  status:"optional" },
+  { ticker:"NET",  action:"Watch $190–200",         size:"—",      stop:"—",      risk:"—",     status:"watch"    },
+  { ticker:"CEG",  action:"Watch Q3 earnings",      size:"—",      stop:"—",      risk:"—",     status:"watch"    },
+  { ticker:"ZS",   action:"Pass",                   size:"—",      stop:"—",      risk:"—",     status:"pass"     },
+];
+
 const TABS = [
-  {id:"portfolio", label:"📊 Portfolio"},
-  {id:"research",  label:"🔬 Research Log"},
-  {id:"monitoring",label:"🔔 Monitoring"},
+  {id:"portfolio",     label:"📊 Portfolio"},
+  {id:"research",      label:"🔬 Research Log"},
+  {id:"monitoring",    label:"🔔 Monitoring"},
+  {id:"recs",          label:"💡 Recommendations"},
 ];
 
 function App() {
@@ -494,6 +700,7 @@ function App() {
         {tab==="portfolio"  && <PortfolioTab/>}
         {tab==="research"   && <ResearchTab/>}
         {tab==="monitoring" && <MonitoringTab/>}
+        {tab==="recs"       && <RecommendationsTab/>}
       </div>
 
       {/* Footer */}
