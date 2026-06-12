@@ -585,9 +585,9 @@ function RecommendationsTab() {
 
 const RECS_ACTIONABLE = [
   {
-    ticker:"GOOG", company:"Alphabet", action:"Enter — Starter Tranche",
-    size:"$1,655 (7.5%)", entry:"~$180–185", stop:"~$160", stopPct:"-13.5%", risk:"~$224",
-    rationale:"Strongest risk/reward on the list. Trading at $185 with a $493 consensus PT — not a stretched valuation for a company printing 22% revenue growth, 36% operating margins, and 63% cloud acceleration. The DOJ antitrust risk is real but slow-moving and already known.",
+    ticker:"GOOG", company:"Alphabet", action:"Missed Entry — Watch for Re-Entry",
+    size:"—", entry:"Original zone $180–185 (missed); re-evaluate ~$320–330 pullback", stop:"~$290 on new entry", stopPct:"~-10%", risk:"~$330 on new entry",
+    rationale:"Entry zone of $180–185 was correct at time of research. GOOG has since run to ~$358 (+93% from entry zone) — the original risk/reward no longer applies. Thesis intact: 22%+ revenue growth, 36% op margins, 63% cloud acceleration. Do NOT chase here. Watch for a retracement toward $320–330 (prior consolidation) before initiating. Re-run full position sizing and stop logic at that time.",
     violation:"Google Cloud deceleration below 30% YoY growth, OR DOJ structural remedy requiring Search divestiture.",
   },
   {
@@ -632,7 +632,7 @@ const RECS_PASS = [
 
 const REC_SUMMARY = [
   { ticker:"MU",   action:"Active — hold",         size:"$1,655", stop:"$820",   risk:"~$189", status:"active"   },
-  { ticker:"GOOG", action:"Enter — starter",        size:"$1,655", stop:"$160",   risk:"~$224", status:"enter"    },
+  { ticker:"GOOG", action:"Missed entry — watch",    size:"—",      stop:"~$290",  risk:"TBD",   status:"watch"    },
   { ticker:"MSFT", action:"Enter — starter",        size:"$1,655", stop:"$400",   risk:"~$190", status:"enter"    },
   { ticker:"NU",   action:"Optional speculative",   size:"$660–880",stop:"$10.50",risk:"~$80",  status:"optional" },
   { ticker:"NET",  action:"Watch $190–200",         size:"—",      stop:"—",      risk:"—",     status:"watch"    },
